@@ -3,13 +3,21 @@ let selectedCities;
 let doubleConnectedCities;
 let connections;
 
+let playButton;
+let algorithmUpdateSpeed = 50;
+let counter = 0
+let playing = false;
+
+let frameWidth = 1000;
+let frameHeight = 600;
+
 function setup() {
   cities = [];
   selectedCities = [];
   doubleSelectedCities = [];
   connections = [];
 
-  createCanvas(1000, 600);
+  createCanvas(frameWidth, frameHeight);
   angleMode(DEGREES);
 
     // input = createFileInput(handleFile);
@@ -18,10 +26,10 @@ function setup() {
     // repeat = createCheckbox("Repeat", false);
     // repeat.position(100, 550);
     // repeat.changed(handleCheckboxChange);
-    //
-    // playButton = createButton("PLAY");
-    // playButton.position(10, 550);
-    // playButton.mousePressed(handlePlayButtonPress);
+
+  playButton = createButton("PLAY");
+  playButton.position(1100, 200);
+  playButton.mousePressed(handlePlayButtonPress);
 }
 
 function draw() {
@@ -31,6 +39,15 @@ function draw() {
 
   drawConnections();
   drawCities();
+
+  if (playing) {
+    if (counter == 0) {
+      console.log("update algorithm!");
+      // run ACO optimisation
+    }
+    counter += 1;
+    counter = counter % algorithmUpdateSpeed;
+  }
 }
 
 function updateCities() {
@@ -57,46 +74,53 @@ function drawCities() {
 }
 
 function mouseClicked() {
-  cities.map(city => {
-    if (city.withinArea(mouseX, mouseY)) {
-      if (doubleSelectedCities.length == 1 &&
-            doubleSelectedCities[0] == city) {
-        city.changeDoubleClicked(false);
-        doubleSelectedCities = [];
-      } else if (selectedCities.length == 0) {
-        selectedCities.push(city);
-        city.changeClicked(true);
-      } else if (selectedCities.length == 1) {
-        if (selectedCities[0] == city) {
-          doubleSelectedCities.push(city);
-          selectedCities = [];
-          city.changeDoubleClicked(true);
-        } else {
-          otherCity = selectedCities[0];
-          selectedCities = [];
+  if (withinFrame(mouseX, mouseY)) {
+    cities.map(city => {
+      if (city.withinArea(mouseX, mouseY)) {
+        if (doubleSelectedCities.length == 1 &&
+              doubleSelectedCities[0] == city) {
+          city.changeDoubleClicked(false);
+          doubleSelectedCities = [];
+        } else if (selectedCities.length == 0) {
+          selectedCities.push(city);
+          city.changeClicked(true);
+        } else if (selectedCities.length == 1) {
+          if (selectedCities[0] == city) {
+            doubleSelectedCities.push(city);
+            selectedCities = [];
+            city.changeDoubleClicked(true);
+          } else {
+            otherCity = selectedCities[0];
+            selectedCities = [];
 
-          otherCity.changeClicked(false);
-          city.changeClicked(false);
+            otherCity.changeClicked(false);
+            city.changeClicked(false);
 
-          newConnection = new Connection(city, otherCity);
-          shouldAdd = connections.reduce((res, item) =>
-                res && ! item.isEqual(newConnection), true);
-          if (shouldAdd) {
-            connections.push(
-              newConnection
-            );
-            city.addConnection(newConnection);
-            otherCity.addConnection(newConnection);
+            newConnection = new Connection(city, otherCity);
+            shouldAdd = connections.reduce((res, item) =>
+                  res && ! item.isEqual(newConnection), true);
+            if (shouldAdd) {
+              connections.push(
+                newConnection
+              );
+              city.addConnection(newConnection);
+              otherCity.addConnection(newConnection);
+            }
           }
         }
       }
-    }
-  })
+    })
 
-  let newCity = new City(mouseX, mouseY);
-  if (checkNoOverlap(newCity)) {
-    cities.push(newCity);
+    let newCity = new City(mouseX, mouseY);
+    if (checkNoOverlap(newCity)) {
+      cities.push(newCity);
+    }
   }
+}
+
+function withinFrame(xPosition, yPosition) {
+  return (xPosition >= 0 && xPosition <= frameWidth
+          && yPosition >= 0 && yPosition <= frameHeight);
 }
 
 function keyPressed() {
@@ -147,4 +171,13 @@ function deleteObjectFromArray(array, objectToDelete) {
   return array.filter(
     object => object != objectToDelete
   );
+}
+
+function handlePlayButtonPress() {
+  playing = !playing;
+  if (playing) {
+    playButton.html("PAUSE");
+  } else {
+    playButton.html("PLAY")
+  }
 }
