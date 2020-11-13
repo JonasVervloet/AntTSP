@@ -11,6 +11,8 @@ let playing = false;
 let frameWidth = 1000;
 let frameHeight = 600;
 
+let maxPheromones = 20;
+
 function setup() {
   cities = [];
   selectedCities = [];
@@ -66,7 +68,9 @@ function updateCities() {
 }
 
 function drawConnections() {
-  connections.map(connection => connection.drawConnection());
+  connections.map(connection => connection.drawConnection(
+    maxPheromones
+  ));
 }
 
 function drawCities() {
