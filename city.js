@@ -63,6 +63,12 @@ class City {
     this.yPos = newY;
   }
 
+  isNormal() {
+    return (
+      this.status == CityStatus.NORMAL
+    );
+  }
+
   isSelected() {
     return (
       this.status == CityStatus.SELECTED
