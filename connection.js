@@ -1,24 +1,47 @@
 class Connection {
+  static color;
+  static strokeWeight = 3;
+
+  static setColor(newColor) {
+    Connection.color = newColor;
+  }
+
+  static setStrokeWeight(newWeight) {
+    Connection.strokeWeight = newWeight;
+  }
+
   constructor(city1, city2) {
     this.city1 = city1;
     this.city2 = city2;
-
-    this.color = color(28, 186, 176);
-    this.strokeWeight = 3;
 
     this.pheromones = 0;
     this.newPheromones = 0;
   }
 
-  drawConnection(maxPheromones) {
-    let sat;
-    if (this.pheromones == 0) {
-      sat = random(256);
+  hasCity(otherCity) {
+    return (this.city1 == otherCity || this.city2 == otherCity);
+  }
+
+  getOtherCity(otherCity) {
+    console.assert(
+      this.hasCity(otherCity),
+      {
+        city: otherCity,
+        errorMsg: 'City is not linked by this connection...'
+      }
+    );
+    if (otherCity == this.city1) {
+      return this.city2;
     } else {
-      sat = int(255 * this.pheromones / maxPheromones);
+      return this.city1;
     }
-    stroke(28, 186, 176, sat);
-    strokeWeight(this.strokeWeight);
+  }
+
+  drawConnection(maxPheromones) {
+    const strokeColor = color(Connection.color);
+    strokeColor.setAlpha(this.getSaturation(maxPheromones));
+    stroke(strokeColor);
+    strokeWeight(Connection.strokeWeight);
     line(this.city1.xPos, this.city1.yPos, this.city2.xPos, this.city2.yPos);
   }
 
@@ -34,11 +57,13 @@ class Connection {
     this.city2.removeConnection(this);
   }
 
-  recievePheromone(pheromones) {
-    this.newPheromones += pheromones;
-  }
-
-  updatePheromone() {
-    //pass
+  getSaturation(maxPheromones) {
+    // let saturation;
+    // if (this.pheromones == 0) {
+    //   saturation = random(256);
+    // } else {
+    //   saturation = int(255 * this.pheromones / maxPheromones);
+    // }
+    return 255;
   }
 }

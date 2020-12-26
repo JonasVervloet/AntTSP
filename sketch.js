@@ -14,6 +14,24 @@ let frameHeight = 600;
 let maxPheromones = 20;
 
 function setup() {
+  City.setColor(
+    color(39, 201, 120)
+  );
+  City.setStrokeColor(
+    color(225, 59, 44)
+  );
+  City.setDoubleClickStrokeColor(
+    color(255, 250, 104)
+  );
+  City.setStrokeWeight(4);
+  City.setRadius(10);
+  City.setLargeRadius(13);
+
+  Connection.setColor(
+    color(28, 186, 176)
+  );
+  Connection.setStrokeWeight(3);
+
   cities = [];
   selectedCities = [];
   doubleSelectedCities = [];
@@ -32,24 +50,44 @@ function setup() {
   playButton = createButton("PLAY");
   playButton.position(1100, 200);
   playButton.mousePressed(handlePlayButtonPress);
+
+  const city1 = new City(20, 40);
+  const city2 = new City(100, 120);
+  const city3 = new City(500, 300);
+  cities.push(city1);
+  cities.push(city2);
+
+  city1.click();
+  city1.setToHoverState();
+  console.log(city1.isHovered());
+  city1.updatePosition(200, 400);
+
+  const connection = new Connection(cities[0], cities[1]);
+  connections.push(connection);
+  console.log(cities);
+  console.log(connections);
+
+  console.log(connection.getOtherCity(city1));
+  console.log(connection.getOtherCity(city2));
+  console.log(connection.getOtherCity(city3));
 }
 
 function draw() {
   background(220);
 
-  updateCities();
+  // updateCities();
 
   drawConnections();
   drawCities();
 
-  if (playing) {
-    if (counter == 0) {
-      console.log("update algorithm!");
-      // run ACO optimisation
-    }
-    counter += 1;
-    counter = counter % algorithmUpdateSpeed;
-  }
+  // if (playing) {
+  //   if (counter == 0) {
+  //     console.log("update algorithm!");
+  //     // run ACO optimisation
+  //   }
+  //   counter += 1;
+  //   counter = counter % algorithmUpdateSpeed;
+  // }
 }
 
 function updateCities() {
@@ -77,61 +115,61 @@ function drawCities() {
   cities.map(city => city.drawCity());
 }
 
-function mouseClicked() {
-  if (withinFrame(mouseX, mouseY)) {
-    cities.map(city => {
-      if (city.withinArea(mouseX, mouseY)) {
-        if (doubleSelectedCities.length == 1 &&
-              doubleSelectedCities[0] == city) {
-          city.changeDoubleClicked(false);
-          doubleSelectedCities = [];
-        } else if (selectedCities.length == 0) {
-          selectedCities.push(city);
-          city.changeClicked(true);
-        } else if (selectedCities.length == 1) {
-          if (selectedCities[0] == city) {
-            doubleSelectedCities.push(city);
-            selectedCities = [];
-            city.changeDoubleClicked(true);
-          } else {
-            otherCity = selectedCities[0];
-            selectedCities = [];
+// function mouseClicked() {
+//   if (withinFrame(mouseX, mouseY)) {
+//     cities.map(city => {
+//       if (city.withinArea(mouseX, mouseY)) {
+//         if (doubleSelectedCities.length == 1 &&
+//               doubleSelectedCities[0] == city) {
+//           city.changeDoubleClicked(false);
+//           doubleSelectedCities = [];
+//         } else if (selectedCities.length == 0) {
+//           selectedCities.push(city);
+//           city.changeClicked(true);
+//         } else if (selectedCities.length == 1) {
+//           if (selectedCities[0] == city) {
+//             doubleSelectedCities.push(city);
+//             selectedCities = [];
+//             city.changeDoubleClicked(true);
+//           } else {
+//             otherCity = selectedCities[0];
+//             selectedCities = [];
 
-            otherCity.changeClicked(false);
-            city.changeClicked(false);
+//             otherCity.changeClicked(false);
+//             city.changeClicked(false);
 
-            newConnection = new Connection(city, otherCity);
-            shouldAdd = connections.reduce((res, item) =>
-                  res && ! item.isEqual(newConnection), true);
-            if (shouldAdd) {
-              connections.push(
-                newConnection
-              );
-              city.addConnection(newConnection);
-              otherCity.addConnection(newConnection);
-            }
-          }
-        }
-      }
-    })
+//             newConnection = new Connection(city, otherCity);
+//             shouldAdd = connections.reduce((res, item) =>
+//                   res && ! item.isEqual(newConnection), true);
+//             if (shouldAdd) {
+//               connections.push(
+//                 newConnection
+//               );
+//               city.addConnection(newConnection);
+//               otherCity.addConnection(newConnection);
+//             }
+//           }
+//         }
+//       }
+//     })
 
-    let newCity = new City(mouseX, mouseY);
-    if (checkNoOverlap(newCity)) {
-      cities.push(newCity);
-    }
-  }
-}
+//     let newCity = new City(mouseX, mouseY);
+//     if (checkNoOverlap(newCity)) {
+//       cities.push(newCity);
+//     }
+//   }
+// }
 
 function withinFrame(xPosition, yPosition) {
   return (xPosition >= 0 && xPosition <= frameWidth
           && yPosition >= 0 && yPosition <= frameHeight);
 }
 
-function keyPressed() {
-  if (keyCode == DELETE) {
-    handleDeletePress();
-  }
-}
+// function keyPressed() {
+//   if (keyCode == DELETE) {
+//     handleDeletePress();
+//   }
+// }
 
 function handleDeletePress() {
   if (selectedCities.length == 1) {

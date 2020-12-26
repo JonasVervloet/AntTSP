@@ -1,41 +1,108 @@
+const CityStatus = {
+  NORMAL: 'normal',
+  HOVER: 'hover',
+  SELECTED: 'selected',
+  DOUBLE: 'doubleSelected'
+}
+
 class City {
+  static color;
+  static strokeColor;
+  static doubleClickStrokeColor;
+  static strokeWeight = 4;
+  static radius = 10;
+  static largeRadius = 13;
+
+  static setColor(newColor) {
+    City.color = newColor;
+  }
+
+  static setStrokeColor(newColor) {
+    City.strokeColor = newColor;
+  }
+
+  static setDoubleClickStrokeColor(newColor) {
+    City.doubleClickStrokeColor = newColor;
+  }
+
+  static setStrokeWeight(newWeight) {
+    City.strokeWeight = newWeight;
+  }
+
+  static setRadius(newRadius) {
+    City.radius = newRadius;
+  }
+
+  static setLargeRadius(newRadius) {
+    City.largeRadius = newRadius;
+  }
+
   constructor(x, y) {
     this.xPos = x;
     this.yPos = y;
-    this.selected = false;
-    this.doubleSelected = false;
-    this.hover = false;
-
-    this.radius = 10;
-    this.largeRadius = 13;
-    this.spacing = 5;
-
-    this.color = color(39, 201, 120);
-    this.strokeColor = color(225, 59, 44);
-    this.doubleClickStrokeColor = color(255, 250, 104);
-    this.strokeWeight = 4;
 
     this.connections = []
+    this.status = CityStatus.NORMAL;
   }
 
-  overlap(otherCity) {
-    return this.largeRadius + otherCity.largeRadius >= this.distanceToOtherCity(otherCity);
-  }
-
-  distanceToOtherCity(other) {
-    return this.distanceToPoint(other.xPos, other.yPos);
-  }
-
-  distanceToPoint(otherX, otherY) {
-    return sqrt(
-      pow(this.xPos - otherX, 2) +
-      pow(this.yPos - otherY, 2)
+  withinArea(x, y, margin = 0) {
+    return (
+      this.distanceToPoint(x, y) - City.largeRadius <= margin
     );
   }
 
-  changePosition(newXPos, newYPos) {
-    this.xPos = newXPos;
-    this.yPos = newYPos;
+  distanceToPoint(x, y) {
+    return sqrt(
+      pow(this.xPos - x, 2) +
+      pow(this.yPos - y, 2)
+    );
+  }
+
+  updatePosition(newX, newY) {
+    this.xPos = newX;
+    this.yPos = newY;
+  }
+
+  isSelected() {
+    return (
+      this.status == CityStatus.SELECTED
+    );
+  }
+
+  isDoubleSelected() {
+    return (
+      this.status == CityStatus.DOUBLE
+    );
+  }
+
+  isHovered() {
+    return (
+      this.status == CityStatus.HOVER
+    );
+  }
+
+  setToNormalState() {
+    this.status = CityStatus.NORMAL;
+  }
+
+  setToHoverState() {
+    if (!(this.isSelected() || this.isDoubleSelected())) {
+      this.status = CityStatus.HOVER;
+    } else {
+      console.log(
+        "Hover state not activated when (double) selected!"
+      );
+    }
+  }
+
+  click() {
+    if (this.isSelected()) {
+      this.status = CityStatus.DOUBLE;
+    } else if (this.isDoubleSelected()) {
+      this.status = CityStatus.NORMAL;
+    } else {
+      this.status = CityStatus.SELECTED;
+    }
   }
 
   changeHover(hover) {
@@ -61,21 +128,21 @@ class City {
   }
 
   drawCity() {
-    strokeWeight(this.strokeWeight);
-    fill(this.color);
+    strokeWeight(City.strokeWeight);
+    fill(City.color);
 
-    if (this.selected ) {
-      stroke(this.strokeColor);
-      circle(this.xPos, this.yPos, 2 * this.largeRadius);
-    } else if (this.doubleSelected) {
-      stroke(this.doubleClickStrokeColor);
-      circle(this.xPos, this.yPos, 2 * this.largeRadius);
+    if (this.isSelected()) {
+      stroke(City.strokeColor);
+      circle(this.xPos, this.yPos, 2 * City.largeRadius);
+    } else if (this.isDoubleSelected()) {
+      stroke(City.doubleClickStrokeColor);
+      circle(this.xPos, this.yPos, 2 * City.largeRadius);
     } else {
       noStroke();
-      if (this.hover) {
-        circle(this.xPos, this.yPos, 2 * this.largeRadius);
+      if (this.isHovered()) {
+        circle(this.xPos, this.yPos, 2 * City.largeRadius);
       } else {
-        circle(this.xPos, this.yPos, 2 * this.radius);
+        circle(this.xPos, this.yPos, 2 * City.largeRadius);
       }
     }
   }
@@ -85,10 +152,24 @@ class City {
   }
 
   addConnection(connection) {
+    console.assert(
+      connection.hasCity(this),
+      {
+        connection: connection,
+        errorMsg: 'Connection does not contain this city..'
+      }
+    )
     this.connections.push(connection);
   }
 
   removeConnection(connectionToRemove) {
+    console.assert(
+      connection.hasCity(this),
+      {
+        connection: connectionToRemove,
+        errorMsg: 'Connection does not link to this city..'
+      }
+    );
     this.connections = this.connections.filter(
       connection => connection != connectionToRemove
     );
