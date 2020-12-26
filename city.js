@@ -111,28 +111,6 @@ class City {
     }
   }
 
-  changeHover(hover) {
-    this.hover = hover;
-  }
-
-  changeClicked(clicked) {
-    if (clicked) {
-      this.doubleSelected = false;
-    }
-    this.selected = clicked;
-  }
-
-  changeDoubleClicked(clicked) {
-    if (clicked) {
-      this.selected = false;
-    }
-    this.doubleSelected = clicked;
-  }
-
-  withinArea(xPos, yPos) {
-    return (this.distanceToPoint(xPos, yPos) <= this.largeRadius);
-  }
-
   drawCity() {
     strokeWeight(City.strokeWeight);
     fill(City.color);
@@ -148,7 +126,7 @@ class City {
       if (this.isHovered()) {
         circle(this.xPos, this.yPos, 2 * City.largeRadius);
       } else {
-        circle(this.xPos, this.yPos, 2 * City.largeRadius);
+        circle(this.xPos, this.yPos, 2 * City.radius);
       }
     }
   }

@@ -5,6 +5,12 @@ class EventHandler {
     }
 
     update(mousePositionX, mousePositionY) {
+        this.environment.getNormalCities().filter(
+            city => city.withinArea(mousePositionX, mousePositionY)
+        ).map(city => city.setToHoverState());
+        this.environment.getHoveredCities().filter(
+            city => ! city.withinArea(mousePositionX, mousePositionY)
+        ).map(city => city.setToNormalState());
         this.environment.draw();
     }
 
