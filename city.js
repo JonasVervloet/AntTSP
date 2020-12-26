@@ -131,6 +131,14 @@ class City {
     }
   }
 
+  isConnectedTo(otherCity) {
+    return (
+      this.connections.filter(
+        connection => connection.hasCity(otherCity)
+      ).length > 0
+    );
+  }
+
   getConnections() {
     return this.connections;
   }
@@ -148,7 +156,7 @@ class City {
 
   removeConnection(connectionToRemove) {
     console.assert(
-      connection.hasCity(this),
+      connectionToRemove.hasCity(this),
       {
         connection: connectionToRemove,
         errorMsg: 'Connection does not link to this city..'

@@ -49,8 +49,17 @@ class Environment {
     }
 
     addConnection(city1, city2) {
+        const connection = new Connection(city1, city2);
+        city1.addConnection(connection);
+        city2.addConnection(connection);
         this.connections.push(
-            new Connection(city1, city2)
+            connection
+        );
+    }
+
+    removeConnection(toRemove) {
+        this.connections = this.connections.filter(
+            connection => connection != toRemove
         );
     }
 

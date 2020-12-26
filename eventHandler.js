@@ -1,10 +1,16 @@
 class EventHandler {
-    constructor() {
+    constructor(width, height) {
+        this.frameWidth = width;
+        this.frameHeight = height;
         this.playing = false;
         this.environment = new Environment();
     }
 
     update(mousePositionX, mousePositionY) {
+        const doubleSelection = this.environment.getDoubleSelectedCities();
+        if (doubleSelection.length == 1) {
+            doubleSelection[0].updatePosition(mousePositionX, mousePositionY);
+        }
         this.environment.getNormalCities().filter(
             city => city.withinArea(mousePositionX, mousePositionY)
         ).map(city => city.setToHoverState());
@@ -15,83 +21,81 @@ class EventHandler {
     }
 
     handleMouseClick(mousePositionX, mousePositionY) {
-        console.log("Handling mouse click!");
-        this.environment.addCity(mousePositionX, mousePositionY);
-
-        // if (withinFrame(mouseX, mouseY)) {
-        //   cities.map(city => {
-        //     if (city.withinArea(mouseX, mouseY)) {
-        //       if (doubleSelectedCities.length == 1 &&
-        //             doubleSelectedCities[0] == city) {
-        //         city.changeDoubleClicked(false);
-        //         doubleSelectedCities = [];
-        //       } else if (selectedCities.length == 0) {
-        //         selectedCities.push(city);
-        //         city.changeClicked(true);
-        //       } else if (selectedCities.length == 1) {
-        //         if (selectedCities[0] == city) {
-        //           doubleSelectedCities.push(city);
-        //           selectedCities = [];
-        //           city.changeDoubleClicked(true);
-        //         } else {
-        //           otherCity = selectedCities[0];
-        //           selectedCities = [];
-
-        //           otherCity.changeClicked(false);
-        //           city.changeClicked(false);
-
-        //           newConnection = new Connection(city, otherCity);
-        //           shouldAdd = connections.reduce((res, item) =>
-        //                 res && ! item.isEqual(newConnection), true);
-        //           if (shouldAdd) {
-        //             connections.push(
-        //               newConnection
-        //             );
-        //             city.addConnection(newConnection);
-        //             otherCity.addConnection(newConnection);
-        //           }
-        //         }
-        //       }
-        //     }
-        //   })
-
-        //   let newCity = new City(mouseX, mouseY);
-        //   if (checkNoOverlap(newCity)) {
-        //     cities.push(newCity);
-        //   }
-        // }
+        if (withinFrame(mousePositionX, mousePositionY)) {
+            const blockingCities = this.environment.getCities().filter(city =>
+                city.withinArea(mousePositionX, mousePositionY, City.largeRadius)
+            );
+            if (blockingCities.length == 0) {
+                this.environment.addCity(mousePositionX, mousePositionY);
+                this.undoSelections();
+            } else {
+                const selectedCities = blockingCities.filter(
+                    city => city.withinArea(mousePositionX, mousePositionY)
+                );
+                if (selectedCities.length > 1) {
+                    throw "More than 1 city selected?!?";
+                }
+                if (selectedCities.length == 1) {
+                    selectedCities[0].click();
+                    this.connectCities();
+                }
+            }
+        }
     }
 
     handleDeletePress() {
-        console.log("Handling delete press!");
-        // if (selectedCities.length == 1) {
-        //   selectedCity = selectedCities[0];
-        //   selectedConnections = selectedCity.getConnections();
-        //   selectedConnections.map(
-        //     connection => {
-        //       connection.deleteConnection();
-        //     }
-        //   );
+        const selectedCities = this.environment.getSelectedCities();
 
-        //   connections = deleteMultipleObjectsFromArray(
-        //     connections, selectedConnections
-        //   );
-
-        //   cities = cities.filter(
-        //     city => city != selectedCity
-        //   );
-        //   selectedCities = [];
-        // }
-            }
+        if (selectedCities.length > 0) {
+            selectedCities.map(city => {
+                const connections = city.getConnections();
+                connections.map(connection => {
+                    this.environment.removeConnection(connection);
+                    connection.deleteConnection();
+                });
+                this.environment.deleteCity(city)
+            });
+        }
+    }
 
     handlePlayButtonClick() {
-        console.log("Handling play button click");
+        this.playing = !this.playing;
 
-        // playing = !playing;
-        // if (playing) {
-        //   playButton.html("PAUSE");
-        // } else {
-        //   playButton.html("PLAY")
-        // }
+        if (this.playing) {
+            playButton.html("PAUSE");
+        } else {
+            playButton.html("PLAY");
+        }
+    }
+
+    withinFrame(positionX, positionY) {
+        return (positionX >= 0 && positionY <= this.frameWidth
+                && positionY >= 0 && postionY <= this.frameHeight)
+    }
+
+    undoSelections() {
+        this.environment.getSelectedCities().map(
+            city => city.setToNormalState()
+        );
+        this.environment.getDoubleSelectedCities().map(
+            city => city.setToNormalState()
+        );
+    }
+
+    connectCities() {
+        const selectedCities = this.environment.getSelectedCities();
+        if (selectedCities.length > 2) {
+            throw "More than two cities selected!";
+        }
+
+        if (selectedCities.length == 2) {
+            if (! selectedCities[0].isConnectedTo(selectedCities[1])) {
+                this.environment.addConnection(
+                    selectedCities[0], selectedCities[1]
+                );    
+            }
+
+            selectedCities.map(city => city.setToNormalState());
+        }
     }
 }

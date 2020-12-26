@@ -4,7 +4,8 @@ let frameHeight = 600;
 let maxPheromones = 20;
 
 let playButton;
-let eventHandler = new EventHandler();
+let eventHandler = 
+  new EventHandler(frameWidth, frameHeight);
 
 function setup() {
   City.setColor(color(39, 201, 120));
